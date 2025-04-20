@@ -6,20 +6,20 @@ import { listSensorsData } from '../graphql/queries';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Label, BarChart, Bar, ResponsiveContainer } from 'recharts';
 import { PieChart, Pie, Cell, Legend } from 'recharts';
 import { AreaChart, Area } from 'recharts';
-import { WiThermometer, WiThermometerExterior, WiThermometerInternal } from 'react-icons/wi';
+// import { WiThermometer, WiThermometerExterior, WiThermometerInternal } from 'react-icons/wi';
 import { FaTemperatureHigh, FaTemperatureLow, FaTemperatureQuarter } from 'react-icons/fa6';
 
 
 
 // Format timestamp for x-axis
-function formatTimestamp(ts) {
-  return ts ? new Date(ts).toLocaleTimeString() : "Invalid";
-}
+// function formatTimestamp(ts) {
+//   return ts ? new Date(ts).toLocaleTimeString() : "Invalid";
+// }
 
-// Add this function near the top with other format functions
-function formatDate(ts) {
-  return ts ? new Date(ts).toLocaleDateString() : "Invalid";
-}
+// // Add this function near the top with other format functions
+// function formatDate(ts) {
+//   return ts ? new Date(ts).toLocaleDateString() : "Invalid";
+// }
 
 // Add this function to calculate daily averages
 function calculateDailyAverages(sensors) {
