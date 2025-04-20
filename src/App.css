@@ -61,23 +61,72 @@
   animation: fadeInUp 0.8s ease-out;
 }
 
+.dashboard-header {
+  position: relative;
+  height: 180px;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dashboard-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
 .dashboard-title {
   font-family: 'Poppins', sans-serif;
-  font-size: 2rem; /* Larger title for better prominence */
+  font-size: 2.5rem; /* Larger title for better prominence */
   font-weight: 700;
-  margin-bottom: 1.5rem;
-  color: #333;
+  color: white;
   text-align: center;
   width: 100%;
   max-width: 100%;
-  animation: pulse 2s infinite;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 2;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dashboard-hero-image {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.dashboard-header-image {
+  width: 100%;
+  max-height: 250px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  border-radius: 8px;
+}
+
+.dashboard-header-image:hover {
+  transform: scale(1.02);
 }
 
 .summary {
+  font-size:x-large;
+  color:#00C851;
+  background: rgb(233, 223, 132);
+  font-weight: 700;
   margin-bottom: 2rem;
-  text-align: center; /* Center summary text */
-  background: white;
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -88,6 +137,38 @@
 .summary:hover {
   transform: translateY(-5px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.summary-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2rem;
+}
+
+.summary-image {
+  flex: 1;
+  max-width: 40%;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.summary-chart-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.3s ease;
+  border-radius: 8px;
+}
+
+.summary-chart-image:hover {
+  transform: scale(1.02);
+}
+
+.summary-text {
+  flex: 1;
+  text-align: left;
 }
 
 .summary h2 {
@@ -112,7 +193,7 @@
   margin: 1rem 0;
   padding: 0.5rem;
   text-align: center;
-  border: 1px solid #ddd;
+  border: 1px solid #f78d0b;
   border-radius: 4px;
   font-size: 1.1rem; /* Increased font size */
   width: 100%;
@@ -121,7 +202,7 @@
   justify-content: center;
   gap: 1rem; /* Added gap between options */
   animation: slideInRight 0.8s ease-out 0.2s both;
-  background: white;
+  background: rgb(233, 223, 132);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
@@ -136,7 +217,7 @@
   font-size: 1.1rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  background-color: white;
+  background-color: rgb(242, 204, 79);
   cursor: pointer;
   min-width: 200px; /* Minimum width for the select */
   transition: all 0.3s ease;
@@ -639,7 +720,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: #ddd;
+  background: rgb(206, 203, 203);
   z-index: 0;
 }
 
@@ -649,7 +730,6 @@
   justify-content: center;
   margin: 0.5rem 0;
   padding: 0.5rem;
-  background: rgba(255, 255, 255, 0.8);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
@@ -659,6 +739,7 @@
 .temperature-indicator:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+ 
 }
 
 .temperature-indicator svg {
@@ -714,5 +795,21 @@
   
   .quicksight-iframe {
     height: 400px;
+  }
+}
+
+/* Media query for smaller screens */
+@media screen and (max-width: 768px) {
+  .summary-content {
+    flex-direction: column;
+  }
+
+  .summary-image {
+    max-width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .summary-text {
+    text-align: center;
   }
 }

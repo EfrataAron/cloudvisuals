@@ -67,7 +67,7 @@ const TemperatureLevelIndicator = ({ temperature }) => {
     };
     if (temp >= 20) return { 
       icon: <FaTemperatureQuarter size={24} />, 
-      color: '#ffbb33', 
+      color: '#00C851', 
       label: 'Moderate' 
     };
     return { 
@@ -190,15 +190,28 @@ function SensorDashboard() {
 
   return (
     <div className="dashboard-container">
-      <h1 className="dashboard-title">Sensor Dashboard</h1>
+      <div className="dashboard-header" style={{ backgroundImage: "url(/background.jpg)" }}>
+        <h1 className="dashboard-title">Sensor Dashboard</h1>
+      </div>
 
       <div className="summary">
-        <h2 className="text-lg font-medium">Summary</h2>
-        <p> Showing <strong>{sensors.length}</strong> data points ({getTimeRangeLabel(timeRange)}) </p>
-        <p>Temperature: {Math.min(...tempVals)}°C to {Math.max(...tempVals)}°C</p>
-        <p>Humidity: {Math.min(...humidVals)}% to {Math.max(...humidVals)}%</p>
-        <p>Avg Battery Voltage: {batteryVals.length ? (batteryVals.reduce((a, b) => a + b, 0) / batteryVals.length).toFixed(2) : "N/A"} V</p>
-        <TemperatureLevelIndicator temperature={sensors[sensors.length - 1].temperature} />
+        <div className="summary-content">
+          <div className="summary-image">
+            <img 
+              src="/summary.jpg" 
+              alt="Data analytics visualization" 
+              className="summary-chart-image" 
+            />
+          </div>
+          <div className="summary-text">
+            <h2 className="text-lg font-medium">Summary</h2>
+            <p> Showing <strong>{sensors.length}</strong> data points ({getTimeRangeLabel(timeRange)}) </p>
+            <p>Temperature: {Math.min(...tempVals)}°C to {Math.max(...tempVals)}°C</p>
+            <p>Humidity: {Math.min(...humidVals)}% to {Math.max(...humidVals)}%</p>
+            <p>Avg Battery Voltage: {batteryVals.length ? (batteryVals.reduce((a, b) => a + b, 0) / batteryVals.length).toFixed(2) : "N/A"} V</p>
+            <TemperatureLevelIndicator temperature={sensors[sensors.length - 1].temperature} />
+          </div>
+        </div>
       </div>
       
       <div className="time-range-select">
