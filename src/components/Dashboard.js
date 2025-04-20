@@ -481,16 +481,19 @@ function SensorDashboard() {
       <div className="section-title">
         <h2>QUICKSIGHT ANALYTICS</h2>
       </div>
-      <div className="quicksight-grid">{/*piechart*/}
+      <div className="quicksight-grid">
+      <iframe width="700" height="600" title="overall chart" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_207a2e0b-0ef9-4fdf-bc2d-237faaf77326/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_2d127d3a-b65e-4c0a-bf32-800083e664fb?directory_alias=Efrata25"></iframe>
+      <iframe width="700" height="600" title="line chart" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/a0f34396-3f38-4825-a123-0549da9897a9/sheets/a0f34396-3f38-4825-a123-0549da9897a9_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/a0f34396-3f38-4825-a123-0549da9897a9_9c9b1dcc-074e-47f7-a344-e3dc31a97de3?directory_alias=Efrata25"></iframe>
+        {/*piechart*/}
         <iframe 
           width="700" 
           height="600" 
-          src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_a8108c2e-9c81-4d06-89d2-619f8225d586?directory_alias=Efrata25"
+          src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/a0f34396-3f38-4825-a123-0549da9897a9/sheets/a0f34396-3f38-4825-a123-0549da9897a9_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/a0f34396-3f38-4825-a123-0549da9897a9_a8108c2e-9c81-4d06-89d2-619f8225d586?directory_alias=Efrata25"
           className="quicksight-piechart"
           title="QuickSight Visualization 1"
           allowFullScreen
         ></iframe>
-
+       
         {/* quicksight*/}
         <iframe width="700" height="600"    title="quicksight-graph1" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_0358aa54-1b76-4997-96bd-6e5ab7f0fd88?directory_alias=Efrata25"></iframe>
         <iframe width="700" height="600" title="quicksight-graph2" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_5260ad90-29e3-4912-a8d7-10c8360002fc?directory_alias=Efrata25"></iframe>
