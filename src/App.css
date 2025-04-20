@@ -677,3 +677,42 @@
     transform: scale(1);
   }
 }
+
+/* QuickSight Visualization Styles */
+.quicksight-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 2rem;
+  margin: 2rem 0;
+  padding: 0 2rem;
+  justify-items: center;   /* centers each item horizontally */
+  align-items: center;  
+  text-align: center;
+}
+
+.quicksight-iframe {
+  width: 100%;
+  height: 450px;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+.quicksight-iframe:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Media query for smaller screens */
+@media screen and (max-width: 1200px) {
+  .quicksight-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .quicksight-iframe {
+    height: 400px;
+  }
+}

@@ -9,6 +9,8 @@ import { AreaChart, Area } from 'recharts';
 import { WiThermometer, WiThermometerExterior, WiThermometerInternal } from 'react-icons/wi';
 import { FaTemperatureHigh, FaTemperatureLow, FaTemperatureQuarter } from 'react-icons/fa6';
 
+
+
 // Format timestamp for x-axis
 function formatTimestamp(ts) {
   return ts ? new Date(ts).toLocaleTimeString() : "Invalid";
@@ -460,6 +462,36 @@ function SensorDashboard() {
             </PieChart>
           </div>
         </div>
+      </div>
+
+      {/* QuickSight Visualizations Section */}
+      <div className="section-title">
+        <h2>QUICKSIGHT ANALYTICS</h2>
+      </div>
+      <div className="quicksight-grid">{/*piechart*/}
+        <iframe 
+          width="700" 
+          height="600" 
+          src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_a8108c2e-9c81-4d06-89d2-619f8225d586?directory_alias=Efrata25"
+          className="quicksight-piechart"
+          title="QuickSight Visualization 1"
+          allowFullScreen
+        ></iframe>
+
+        {/* quicksight*/}
+        <iframe width="700" height="600"    title="quicksight-graph1" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_0358aa54-1b76-4997-96bd-6e5ab7f0fd88?directory_alias=Efrata25"></iframe>
+        <iframe width="700" height="600" title="quicksight-graph2" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_5260ad90-29e3-4912-a8d7-10c8360002fc?directory_alias=Efrata25"></iframe>
+        <iframe 
+          width="700" 
+          height="600" 
+          src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_8f8c696d-69f9-4bfe-b84c-39a981164fb8?directory_alias=Efrata25"
+          className="quicksight-minmaxgraph"
+          title="QuickSight Visualization 4"
+          allowFullScreen
+        ></iframe>
+
+        <iframe width="700" height="600" title="quicksight-graph3" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_c60feeb7-6ac3-4540-bebe-11481c9edf4f?directory_alias=Efrata25"></iframe>
+        <iframe width="700" height="600" title="quicksight-graph5" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_bcb87fc1-67b6-4e7c-be3b-090b8ea48443?directory_alias=Efrata25"></iframe>       
       </div>
 
       {/* Bar Charts Section */}
