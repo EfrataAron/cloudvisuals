@@ -159,33 +159,46 @@ function SensorDashboard() {
 
   if (loading) return <div>Loading sensors...</div>;
   if (error) return <div>Error loading data: {error}</div>;
+  if (!sensors || sensors.length === 0) {
+    return <div>No sensor data available. Please check your data source.</div>;
+  }
 
   // Stats
   const tempVals = sensors.map(s => s.temperature).filter(v => v != null);
   const humidVals = sensors.map(s => s.humidity).filter(v => v != null);
   const batteryVals = sensors.map(s => s.battery_voltage).filter(v => v != null);
 
+  // Safe calculation for min/max with fallbacks
+  const minTemp = tempVals.length ? Math.min(...tempVals) : 'N/A';
+  const maxTemp = tempVals.length ? Math.max(...tempVals) : 'N/A';
+  const minHumid = humidVals.length ? Math.min(...humidVals) : 'N/A';
+  const maxHumid = humidVals.length ? Math.max(...humidVals) : 'N/A';
+  const avgBattery = batteryVals.length ? (batteryVals.reduce((a, b) => a + b, 0) / batteryVals.length).toFixed(2) : 'N/A';
+
+  // Make sure we have a latest reading for the temperature indicator
+  const latestSensor = sensors.length > 0 ? sensors[sensors.length - 1] : { temperature: 20 }; // Default if no data
+
   const COLORS = ['#FF8042', '#00C49F', '#0088FE'];
 
-  // Group temperature ranges
+  // Group temperature ranges with safe filtering
   const tempGroups = [
-    { name: "< 15°C", value: sensors.filter(s => s.temperature < 15).length },
-    { name: "15°C - 25°C", value: sensors.filter(s => s.temperature >= 15 && s.temperature <= 25).length },
-    { name: "> 25°C", value: sensors.filter(s => s.temperature > 25).length },
+    { name: "< 15°C", value: sensors.filter(s => s && s.temperature < 15).length },
+    { name: "15°C - 25°C", value: sensors.filter(s => s && s.temperature >= 15 && s.temperature <= 25).length },
+    { name: "> 25°C", value: sensors.filter(s => s && s.temperature > 25).length },
   ];
 
-  // Group humidity
+  // Group humidity with safe filtering
   const humidityGroups = [
-    { name: "< 30%", value: sensors.filter(s => s.humidity < 30).length },
-    { name: "30% - 60%", value: sensors.filter(s => s.humidity >= 30 && s.humidity <= 60).length },
-    { name: "> 60%", value: sensors.filter(s => s.humidity > 60).length },
+    { name: "< 30%", value: sensors.filter(s => s && s.humidity < 30).length },
+    { name: "30% - 60%", value: sensors.filter(s => s && s.humidity >= 30 && s.humidity <= 60).length },
+    { name: "> 60%", value: sensors.filter(s => s && s.humidity > 60).length },
   ];
 
-  // Group battery voltage
+  // Group battery voltage with safe filtering
   const batteryGroups = [
-    { name: "< 3.0V", value: sensors.filter(s => s.battery_voltage < 3.0).length },
-    { name: "3.0 - 3.5V", value: sensors.filter(s => s.battery_voltage >= 3.0 && s.battery_voltage <= 3.5).length },
-    { name: "> 3.5V", value: sensors.filter(s => s.battery_voltage > 3.5).length },
+    { name: "< 3.0V", value: sensors.filter(s => s && s.battery_voltage < 3.0).length },
+    { name: "3.0 - 3.5V", value: sensors.filter(s => s && s.battery_voltage >= 3.0 && s.battery_voltage <= 3.5).length },
+    { name: "> 3.5V", value: sensors.filter(s => s && s.battery_voltage > 3.5).length },
   ];
 
   return (
@@ -206,10 +219,10 @@ function SensorDashboard() {
           <div className="summary-text">
             <h2 className="text-lg font-medium">Summary</h2>
             <p> Showing <strong>{sensors.length}</strong> data points ({getTimeRangeLabel(timeRange)}) </p>
-            <p>Temperature: {Math.min(...tempVals)}°C to {Math.max(...tempVals)}°C</p>
-            <p>Humidity: {Math.min(...humidVals)}% to {Math.max(...humidVals)}%</p>
-            <p>Avg Battery Voltage: {batteryVals.length ? (batteryVals.reduce((a, b) => a + b, 0) / batteryVals.length).toFixed(2) : "N/A"} V</p>
-            <TemperatureLevelIndicator temperature={sensors[sensors.length - 1].temperature} />
+            <p>Temperature: {minTemp}°C to {maxTemp}°C</p>
+            <p>Humidity: {minHumid}% to {maxHumid}%</p>
+            <p>Avg Battery Voltage: {avgBattery} V</p>
+            <TemperatureLevelIndicator temperature={latestSensor.temperature} />
           </div>
         </div>
       </div>
