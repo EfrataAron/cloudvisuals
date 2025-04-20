@@ -159,14 +159,14 @@ function SensorDashboard() {
 
   if (loading) return <div>Loading sensors...</div>;
   if (error) return <div>Error loading data: {error}</div>;
-  if (!sensors || sensors.length === 0) {
-    return <div>No sensor data available. Please check your data source.</div>;
-  }
-
-  // Stats
-  const tempVals = sensors.map(s => s.temperature).filter(v => v != null);
-  const humidVals = sensors.map(s => s.humidity).filter(v => v != null);
-  const batteryVals = sensors.map(s => s.battery_voltage).filter(v => v != null);
+  
+  // Check if sensors data is available
+  const hasSensorData = sensors && sensors.length > 0;
+  
+  // Safe data calculations that will only run if data is available
+  const tempVals = hasSensorData ? sensors.map(s => s.temperature).filter(v => v != null) : [];
+  const humidVals = hasSensorData ? sensors.map(s => s.humidity).filter(v => v != null) : [];
+  const batteryVals = hasSensorData ? sensors.map(s => s.battery_voltage).filter(v => v != null) : [];
 
   // Safe calculation for min/max with fallbacks
   const minTemp = tempVals.length ? Math.min(...tempVals) : 'N/A';
@@ -176,29 +176,29 @@ function SensorDashboard() {
   const avgBattery = batteryVals.length ? (batteryVals.reduce((a, b) => a + b, 0) / batteryVals.length).toFixed(2) : 'N/A';
 
   // Make sure we have a latest reading for the temperature indicator
-  const latestSensor = sensors.length > 0 ? sensors[sensors.length - 1] : { temperature: 20 }; // Default if no data
+  const latestSensor = hasSensorData ? sensors[sensors.length - 1] : { temperature: 20 }; // Default if no data
 
   const COLORS = ['#FF8042', '#00C49F', '#0088FE'];
 
   // Group temperature ranges with safe filtering
   const tempGroups = [
-    { name: "< 15°C", value: sensors.filter(s => s && s.temperature < 15).length },
-    { name: "15°C - 25°C", value: sensors.filter(s => s && s.temperature >= 15 && s.temperature <= 25).length },
-    { name: "> 25°C", value: sensors.filter(s => s && s.temperature > 25).length },
+    { name: "< 15°C", value: hasSensorData ? sensors.filter(s => s && s.temperature < 15).length : 0 },
+    { name: "15°C - 25°C", value: hasSensorData ? sensors.filter(s => s && s.temperature >= 15 && s.temperature <= 25).length : 0 },
+    { name: "> 25°C", value: hasSensorData ? sensors.filter(s => s && s.temperature > 25).length : 0 },
   ];
 
   // Group humidity with safe filtering
   const humidityGroups = [
-    { name: "< 30%", value: sensors.filter(s => s && s.humidity < 30).length },
-    { name: "30% - 60%", value: sensors.filter(s => s && s.humidity >= 30 && s.humidity <= 60).length },
-    { name: "> 60%", value: sensors.filter(s => s && s.humidity > 60).length },
+    { name: "< 30%", value: hasSensorData ? sensors.filter(s => s && s.humidity < 30).length : 0 },
+    { name: "30% - 60%", value: hasSensorData ? sensors.filter(s => s && s.humidity >= 30 && s.humidity <= 60).length : 0 },
+    { name: "> 60%", value: hasSensorData ? sensors.filter(s => s && s.humidity > 60).length : 0 },
   ];
 
   // Group battery voltage with safe filtering
   const batteryGroups = [
-    { name: "< 3.0V", value: sensors.filter(s => s && s.battery_voltage < 3.0).length },
-    { name: "3.0 - 3.5V", value: sensors.filter(s => s && s.battery_voltage >= 3.0 && s.battery_voltage <= 3.5).length },
-    { name: "> 3.5V", value: sensors.filter(s => s && s.battery_voltage > 3.5).length },
+    { name: "< 3.0V", value: hasSensorData ? sensors.filter(s => s && s.battery_voltage < 3.0).length : 0 },
+    { name: "3.0 - 3.5V", value: hasSensorData ? sensors.filter(s => s && s.battery_voltage >= 3.0 && s.battery_voltage <= 3.5).length : 0 },
+    { name: "> 3.5V", value: hasSensorData ? sensors.filter(s => s && s.battery_voltage > 3.5).length : 0 },
   ];
 
   return (
@@ -218,11 +218,19 @@ function SensorDashboard() {
           </div>
           <div className="summary-text">
             <h2 className="text-lg font-medium">Summary</h2>
-            <p> Showing <strong>{sensors.length}</strong> data points ({getTimeRangeLabel(timeRange)}) </p>
-            <p>Temperature: {minTemp}°C to {maxTemp}°C</p>
-            <p>Humidity: {minHumid}% to {maxHumid}%</p>
-            <p>Avg Battery Voltage: {avgBattery} V</p>
-            <TemperatureLevelIndicator temperature={latestSensor.temperature} />
+            {!hasSensorData ? (
+              <div className="no-data-message">
+                <p>No sensor data available. Please check your data source.</p>
+              </div>
+            ) : (
+              <>
+                <p> Showing <strong>{sensors.length}</strong> data points ({getTimeRangeLabel(timeRange)}) </p>
+                <p>Temperature: {minTemp}°C to {maxTemp}°C</p>
+                <p>Humidity: {minHumid}% to {maxHumid}%</p>
+                <p>Avg Battery Voltage: {avgBattery} V</p>
+                <TemperatureLevelIndicator temperature={latestSensor.temperature} />
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -241,344 +249,349 @@ function SensorDashboard() {
         </select>
       </div>
 
-      {/* Line Charts Section */}
-      <div className="section-title">
-        <h2>LINE PLOTS</h2>
-      </div>
-      <div className="chart-grid">
-        <div className="chart-section">
-          <h2>Temperature Timeline</h2>
-          <div className="area-chart-container">
-            <AreaChart width={500} height={300} data={sensors} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="timestamp" 
-                tickFormatter={formatDateTime}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              >
-                <Label value="Date & Time" position="insideBottom" offset={-5} />
-              </XAxis>
-              <YAxis>
-                <Label value="Temperature (°C)" angle={-90} position="insideLeft" />
-              </YAxis>
-              <Tooltip 
-                labelFormatter={formatDateTime}
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  padding: '10px'
-                }}
-              />
-              <Area type="monotone" dataKey="temperature" stroke="#ff7300" fill="#ff7300" dot={false} />
-            </AreaChart>
+      {/* Only show charts if there is data */}
+      {hasSensorData ? (
+        <>
+          {/* Line Charts Section */}
+          <div className="section-title">
+            <h2>LINE PLOTS</h2>
           </div>
-        </div>
+          <div className="chart-grid">
+            <div className="chart-section">
+              <h2>Temperature Timeline</h2>
+              <div className="area-chart-container">
+                <AreaChart width={500} height={300} data={sensors} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="timestamp" 
+                    tickFormatter={formatDateTime}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  >
+                    <Label value="Date & Time" position="insideBottom" offset={-5} />
+                  </XAxis>
+                  <YAxis>
+                    <Label value="Temperature (°C)" angle={-90} position="insideLeft" />
+                  </YAxis>
+                  <Tooltip 
+                    labelFormatter={formatDateTime}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      padding: '10px'
+                    }}
+                  />
+                  <Area type="monotone" dataKey="temperature" stroke="#ff7300" fill="#ff7300" dot={false} />
+                </AreaChart>
+              </div>
+            </div>
 
-        <div className="chart-section">
-          <h2>Humidity Timeline</h2>
-          <div className="area-chart-container">
-            <AreaChart width={500} height={300} data={sensors} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="timestamp" 
-                tickFormatter={formatDateTime}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              >
-                <Label value="Date & Time" position="insideBottom" offset={-5} />
-              </XAxis>
-              <YAxis>
-                <Label value="Humidity (%)" angle={-90} position="insideLeft" />
-              </YAxis>
-              <Tooltip 
-                labelFormatter={formatDateTime}
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  padding: '10px'
-                }}
-              />
-              <Area type="monotone" dataKey="humidity" stroke="#00bfff" fill="#00bfff" dot={false} />
-            </AreaChart>
+            <div className="chart-section">
+              <h2>Humidity Timeline</h2>
+              <div className="area-chart-container">
+                <AreaChart width={500} height={300} data={sensors} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="timestamp" 
+                    tickFormatter={formatDateTime}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  >
+                    <Label value="Date & Time" position="insideBottom" offset={-5} />
+                  </XAxis>
+                  <YAxis>
+                    <Label value="Humidity (%)" angle={-90} position="insideLeft" />
+                  </YAxis>
+                  <Tooltip 
+                    labelFormatter={formatDateTime}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      padding: '10px'
+                    }}
+                  />
+                  <Area type="monotone" dataKey="humidity" stroke="#00bfff" fill="#00bfff" dot={false} />
+                </AreaChart>
+              </div>
+            </div>
+
+            <div className="chart-section">
+              <h2>Battery Voltage Timeline</h2>
+              <div className="area-chart-container">
+                <AreaChart width={500} height={300} data={sensors} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="timestamp" 
+                    tickFormatter={formatDateTime}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  >
+                    <Label value="Date & Time" position="insideBottom" offset={-5} />
+                  </XAxis>
+                  <YAxis>
+                    <Label value="Voltage (V)" angle={-90} position="insideLeft" />
+                  </YAxis>
+                  <Tooltip 
+                    labelFormatter={formatDateTime}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      padding: '10px'
+                    }}
+                  />
+                  <Area type="monotone" dataKey="battery_voltage" stroke="#82ca9d" fill="#82ca9d" dot={false} />
+                </AreaChart>
+              </div>
+            </div>
+
+            <div className="chart-section">
+              <h2>All Metrics Timeline</h2>
+              <div className="line-chart-container">
+                <LineChart width={500} height={300} data={sensors} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="timestamp" 
+                    tickFormatter={formatDateTime}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  >
+                    <Label value="Date & Time" position="insideBottom" offset={-5} />
+                  </XAxis>
+                  <YAxis>
+                    <Label value="Value" angle={-90} position="insideLeft" />
+                  </YAxis>
+                  <Tooltip 
+                    labelFormatter={formatDateTime}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      padding: '10px'
+                    }}
+                  />
+                  <Line type="monotone" dataKey="temperature" stroke="#ff7300" dot={false} name="Temperature (°C)" />
+                  <Line type="monotone" dataKey="humidity" stroke="#00bfff" dot={false} name="Humidity (%)" />
+                  <Line type="monotone" dataKey="battery_voltage" stroke="#82ca9d" dot={false} name="Battery (V)" />
+                </LineChart>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className="chart-section">
-          <h2>Battery Voltage Timeline</h2>
-          <div className="area-chart-container">
-            <AreaChart width={500} height={300} data={sensors} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="timestamp" 
-                tickFormatter={formatDateTime}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              >
-                <Label value="Date & Time" position="insideBottom" offset={-5} />
-              </XAxis>
-              <YAxis>
-                <Label value="Voltage (V)" angle={-90} position="insideLeft" />
-              </YAxis>
-              <Tooltip 
-                labelFormatter={formatDateTime}
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  padding: '10px'
-                }}
-              />
-              <Area type="monotone" dataKey="battery_voltage" stroke="#82ca9d" fill="#82ca9d" dot={false} />
-            </AreaChart>
+          {/* Pie Charts Section */}
+          <div className="section-title">
+            <h2>PIE CHARTS</h2>
           </div>
-        </div>
+          <div className="pie-chart-grid">
+            <div className="pie-chart-wrapper">
+              <h3>Temperature Distribution</h3>
+              <div className="pie-chart-container">
+                <PieChart width={300} height={300}>
+                  <Pie
+                    data={tempGroups}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    innerRadius={60}
+                    paddingAngle={2}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  >
+                    {tempGroups.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name) => [`${value} readings`, name]}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    formatter={(value) => <span style={{ color: '#666' }}>{value}</span>}
+                  />
+                </PieChart>
+              </div>
+            </div>
 
-        <div className="chart-section">
-          <h2>All Metrics Timeline</h2>
-          <div className="line-chart-container">
-            <LineChart width={500} height={300} data={sensors} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="timestamp" 
-                tickFormatter={formatDateTime}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              >
-                <Label value="Date & Time" position="insideBottom" offset={-5} />
-              </XAxis>
-              <YAxis>
-                <Label value="Value" angle={-90} position="insideLeft" />
-              </YAxis>
-              <Tooltip 
-                labelFormatter={formatDateTime}
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  padding: '10px'
-                }}
-              />
-              <Line type="monotone" dataKey="temperature" stroke="#ff7300" dot={false} name="Temperature (°C)" />
-              <Line type="monotone" dataKey="humidity" stroke="#00bfff" dot={false} name="Humidity (%)" />
-              <Line type="monotone" dataKey="battery_voltage" stroke="#82ca9d" dot={false} name="Battery (V)" />
-            </LineChart>
+            <div className="pie-chart-wrapper">
+              <h3>Humidity Distribution</h3>
+              <div className="pie-chart-container">
+                <PieChart width={300} height={300}>
+                  <Pie
+                    data={humidityGroups}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    innerRadius={60}
+                    paddingAngle={2}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  >
+                    {humidityGroups.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name) => [`${value} readings`, name]}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    formatter={(value) => <span style={{ color: '#666' }}>{value}</span>}
+                  />
+                </PieChart>
+              </div>
+            </div>
+
+            <div className="pie-chart-wrapper">
+              <h3>Battery Voltage Distribution</h3>
+              <div className="pie-chart-container">
+                <PieChart width={300} height={300}>
+                  <Pie
+                    data={batteryGroups}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    innerRadius={60}
+                    paddingAngle={2}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                  >
+                    {batteryGroups.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name) => [`${value} readings`, name]}
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    formatter={(value) => <span style={{ color: '#666' }}>{value}</span>}
+                  />
+                </PieChart>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Pie Charts Section */}
-      <div className="section-title">
-        <h2>PIE CHARTS</h2>
-      </div>
-      <div className="pie-chart-grid">
-        <div className="pie-chart-wrapper">
-          <h3>Temperature Distribution</h3>
-          <div className="pie-chart-container">
-            <PieChart width={300} height={300}>
-              <Pie
-                data={tempGroups}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                innerRadius={60}
-                paddingAngle={2}
-                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-              >
-                {tempGroups.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(value, name) => [`${value} readings`, name]}
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                }}
-              />
-              <Legend
-                verticalAlign="bottom"
-                height={36}
-                formatter={(value) => <span style={{ color: '#666' }}>{value}</span>}
-              />
-            </PieChart>
+          {/* QuickSight Section */}
+          <div className="section-title">
+            <h2>QUICKSIGHT ANALYTICS</h2>
           </div>
-        </div>
+          <div className="quicksight-grid">
+          <iframe width="700" height="600" title="overall chart" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_207a2e0b-0ef9-4fdf-bc2d-237faaf77326/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_2d127d3a-b65e-4c0a-bf32-800083e664fb?directory_alias=Efrata25"></iframe>
+          <iframe width="700" height="600" title="line chart" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/a0f34396-3f38-4825-a123-0549da9897a9/sheets/a0f34396-3f38-4825-a123-0549da9897a9_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/a0f34396-3f38-4825-a123-0549da9897a9_9c9b1dcc-074e-47f7-a344-e3dc31a97de3?directory_alias=Efrata25"></iframe>
+            {/*piechart*/}
+            <iframe 
+              width="700" 
+              height="600" 
+              src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/a0f34396-3f38-4825-a123-0549da9897a9/sheets/a0f34396-3f38-4825-a123-0549da9897a9_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/a0f34396-3f38-4825-a123-0549da9897a9_a8108c2e-9c81-4d06-89d2-619f8225d586?directory_alias=Efrata25"
+              className="quicksight-piechart"
+              title="QuickSight Visualization 1"
+              allowFullScreen
+            ></iframe>
+           
+            {/* quicksight*/}
+            <iframe width="700" height="600"    title="quicksight-graph1" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_0358aa54-1b76-4997-96bd-6e5ab7f0fd88?directory_alias=Efrata25"></iframe>
+            <iframe width="700" height="600" title="quicksight-graph2" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_5260ad90-29e3-4912-a8d7-10c8360002fc?directory_alias=Efrata25"></iframe>
+            <iframe 
+              width="700" 
+              height="600" 
+              src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_8f8c696d-69f9-4bfe-b84c-39a981164fb8?directory_alias=Efrata25"
+              className="quicksight-minmaxgraph"
+              title="QuickSight Visualization 4"
+              allowFullScreen
+            ></iframe>
 
-        <div className="pie-chart-wrapper">
-          <h3>Humidity Distribution</h3>
-          <div className="pie-chart-container">
-            <PieChart width={300} height={300}>
-              <Pie
-                data={humidityGroups}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                innerRadius={60}
-                paddingAngle={2}
-                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-              >
-                {humidityGroups.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(value, name) => [`${value} readings`, name]}
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                }}
-              />
-              <Legend
-                verticalAlign="bottom"
-                height={36}
-                formatter={(value) => <span style={{ color: '#666' }}>{value}</span>}
-              />
-            </PieChart>
+            <iframe width="700" height="600" title="quicksight-graph3" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_c60feeb7-6ac3-4540-bebe-11481c9edf4f?directory_alias=Efrata25"></iframe>
+            <iframe width="700" height="600" title="quicksight-graph5" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_bcb87fc1-67b6-4e7c-be3b-090b8ea48443?directory_alias=Efrata25"></iframe>       
           </div>
-        </div>
 
-        <div className="pie-chart-wrapper">
-          <h3>Battery Voltage Distribution</h3>
-          <div className="pie-chart-container">
-            <PieChart width={300} height={300}>
-              <Pie
-                data={batteryGroups}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                innerRadius={60}
-                paddingAngle={2}
-                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-              >
-                {batteryGroups.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(value, name) => [`${value} readings`, name]}
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                }}
-              />
-              <Legend
-                verticalAlign="bottom"
-                height={36}
-                formatter={(value) => <span style={{ color: '#666' }}>{value}</span>}
-              />
-            </PieChart>
+          {/* Bar Charts Section */}
+          <div className="section-title">
+            <h2>BAR PLOTS</h2>
           </div>
-        </div>
-      </div>
+          <div className="bar-chart-grid">
+            <div className="bar-chart-section">
+              <h2>Daily Average Temperature</h2>
+              <div className="bar-chart-container">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={calculateDailyAverages(sensors)}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis>
+                      <Label value="Temperature (°C)" angle={-90} position="insideLeft" />
+                    </YAxis>
+                    <Tooltip />
+                    <Bar dataKey="temperature" fill="#ff7300" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-      {/* QuickSight Visualizations Section */}
-      <div className="section-title">
-        <h2>QUICKSIGHT ANALYTICS</h2>
-      </div>
-      <div className="quicksight-grid">
-      <iframe width="700" height="600" title="overall chart" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_207a2e0b-0ef9-4fdf-bc2d-237faaf77326/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_2d127d3a-b65e-4c0a-bf32-800083e664fb?directory_alias=Efrata25"></iframe>
-      <iframe width="700" height="600" title="line chart" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/a0f34396-3f38-4825-a123-0549da9897a9/sheets/a0f34396-3f38-4825-a123-0549da9897a9_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/a0f34396-3f38-4825-a123-0549da9897a9_9c9b1dcc-074e-47f7-a344-e3dc31a97de3?directory_alias=Efrata25"></iframe>
-        {/*piechart*/}
-        <iframe 
-          width="700" 
-          height="600" 
-          src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/a0f34396-3f38-4825-a123-0549da9897a9/sheets/a0f34396-3f38-4825-a123-0549da9897a9_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/a0f34396-3f38-4825-a123-0549da9897a9_a8108c2e-9c81-4d06-89d2-619f8225d586?directory_alias=Efrata25"
-          className="quicksight-piechart"
-          title="QuickSight Visualization 1"
-          allowFullScreen
-        ></iframe>
-       
-        {/* quicksight*/}
-        <iframe width="700" height="600"    title="quicksight-graph1" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_0358aa54-1b76-4997-96bd-6e5ab7f0fd88?directory_alias=Efrata25"></iframe>
-        <iframe width="700" height="600" title="quicksight-graph2" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_5260ad90-29e3-4912-a8d7-10c8360002fc?directory_alias=Efrata25"></iframe>
-        <iframe 
-          width="700" 
-          height="600" 
-          src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_8f8c696d-69f9-4bfe-b84c-39a981164fb8?directory_alias=Efrata25"
-          className="quicksight-minmaxgraph"
-          title="QuickSight Visualization 4"
-          allowFullScreen
-        ></iframe>
+            <div className="bar-chart-section">
+              <h2>Daily Average Humidity</h2>
+              <div className="bar-chart-container">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={calculateDailyAverages(sensors)}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis>
+                      <Label value="Humidity (%)" angle={-90} position="insideLeft" />
+                    </YAxis>
+                    <Tooltip />
+                    <Bar dataKey="humidity" fill="#00bfff" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-        <iframe width="700" height="600" title="quicksight-graph3" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_c60feeb7-6ac3-4540-bebe-11481c9edf4f?directory_alias=Efrata25"></iframe>
-        <iframe width="700" height="600" title="quicksight-graph5" src="https://eu-north-1.quicksight.aws.amazon.com/sn/embed/share/accounts/911167923082/dashboards/4a495cf5-e313-4c65-b0f1-f0b515a834f5/sheets/4a495cf5-e313-4c65-b0f1-f0b515a834f5_abd9939c-3f5c-4f49-81c6-adaf80730de1/visuals/4a495cf5-e313-4c65-b0f1-f0b515a834f5_bcb87fc1-67b6-4e7c-be3b-090b8ea48443?directory_alias=Efrata25"></iframe>       
-      </div>
-
-      {/* Bar Charts Section */}
-      <div className="section-title">
-        <h2>BAR PLOTS</h2>
-      </div>
-      <div className="bar-chart-grid">
-        <div className="bar-chart-section">
-          <h2>Daily Average Temperature</h2>
-          <div className="bar-chart-container">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={calculateDailyAverages(sensors)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis>
-                  <Label value="Temperature (°C)" angle={-90} position="insideLeft" />
-                </YAxis>
-                <Tooltip />
-                <Bar dataKey="temperature" fill="#ff7300" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="bar-chart-section">
+              <h2>Daily Average Battery Voltage</h2>
+              <div className="bar-chart-container">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={calculateDailyAverages(sensors)}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis>
+                      <Label value="Voltage (V)" angle={-90} position="insideLeft" />
+                    </YAxis>
+                    <Tooltip />
+                    <Bar dataKey="battery_voltage" fill="#82ca9d" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
-        </div>
-
-        <div className="bar-chart-section">
-          <h2>Daily Average Humidity</h2>
-          <div className="bar-chart-container">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={calculateDailyAverages(sensors)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis>
-                  <Label value="Humidity (%)" angle={-90} position="insideLeft" />
-                </YAxis>
-                <Tooltip />
-                <Bar dataKey="humidity" fill="#00bfff" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="bar-chart-section">
-          <h2>Daily Average Battery Voltage</h2>
-          <div className="bar-chart-container">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={calculateDailyAverages(sensors)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis>
-                  <Label value="Voltage (V)" angle={-90} position="insideLeft" />
-                </YAxis>
-                <Tooltip />
-                <Bar dataKey="battery_voltage" fill="#82ca9d" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
+        </>
+      ) : null}
     </div>
   );
 }
